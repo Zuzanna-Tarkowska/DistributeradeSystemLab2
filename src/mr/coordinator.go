@@ -6,13 +6,23 @@ import "os"
 import "net/rpc"
 import "net/http"
 
-
 type Coordinator struct {
 	// Your definitions here.
 
 }
 
+// TODO Possibly make a psudo please exit task for workers
 // Your code here -- RPC handlers for the worker to call.
+func (c *Coordinator) TaskDistributor(args *TaskArgs, reply TaskReply) error {
+	reply.Task = taskHandler()
+	return nil
+}
+func taskHandler() string {
+	for _, filename := range os.Args[2:] {
+
+	}
+	return "file.txt"
+}
 
 //
 // an example RPC handler.
@@ -23,7 +33,6 @@ func (c *Coordinator) Example(args *ExampleArgs, reply *ExampleReply) error {
 	reply.Y = args.X + 1
 	return nil
 }
-
 
 //
 // start a thread that listens for RPCs from worker.go
@@ -50,7 +59,6 @@ func (c *Coordinator) Done() bool {
 
 	// Your code here.
 
-
 	return ret
 }
 
@@ -63,7 +71,6 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	c := Coordinator{}
 
 	// Your code here.
-
 
 	c.server()
 	return &c
