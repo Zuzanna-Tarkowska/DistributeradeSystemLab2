@@ -156,7 +156,7 @@ func taskCall() (string, string, int, int) {
 
 	reply := TaskReply{}
 
-	ok := call("Coordinator.taskDistributor", &args, &reply)
+	ok := call("Coordinator.TaskDistributor", &args, &reply)
 	if !ok {
 		//TODO
 	}
@@ -166,7 +166,7 @@ func mapDoneCall(mapID int, nReduce int) {
 	args := MapDoneArgs{}
 	args.MapID = mapID
 	reply := DoneReply{}
-	ok := call("Coordinator.mapTasksDone", &args, &reply)
+	ok := call("Coordinator.MapTaskDone", &args, &reply)
 	if !ok {
 		//TODO
 	}
@@ -176,7 +176,7 @@ func reduceDoneCall(reduceID int) {
 	args := ReduceDoneArgs{}
 	args.ReduceID = reduceID
 	reply := DoneReply{}
-	ok := call("Coordinator.reduceTasksDone", &args, &reply)
+	ok := call("Coordinator.ReduceTaskDone", &args, &reply)
 	if !ok {
 		//TODO
 	}
