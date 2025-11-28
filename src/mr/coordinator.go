@@ -51,16 +51,20 @@ type Coordinator struct {
 
 // TODO Possibly make a psudo please exit task for workers
 // Your code here -- RPC handlers for the worker to call.
-func (c *Coordinator) taskDistributor(args *TaskArgs, reply *TaskReply) error {
+func (c *Coordinator) TaskDistributor(args *TaskArgs, reply *TaskReply) error {
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
 
 	now := time.Now()
 
+	if (c.completedReduceTasks == c.NReduce) && (c.completedMapTasks == len(c.mapTasks)) {
+		reply.TaskType = EXIT
+	}
+
 	if c.completedMapTasks < len(c.mapTasks) {
 		for i := range c.mapTasks {
 			task := &c.mapTasks[i]
-			if task.state == IDLE || (TIMEOUT <= now.Sub(task.startTime)) && task.state == IN_PROGRESS {
+			if task.state == IDLE || (TIMEOUT <= now.Sub(task.startTime)) && (task.state == IN_PROGRESS) {
 				task.state = IN_PROGRESS
 				task.startTime = time.Now()
 				//TODO
@@ -76,7 +80,8 @@ func (c *Coordinator) taskDistributor(args *TaskArgs, reply *TaskReply) error {
 
 	} else if c.completedReduceTasks < c.NReduce {
 		for i := range c.reduceTasks {
-			if c.reduceTasks[i].state == IDLE {
+			task := &c.reduceTasks[i]
+			if c.reduceTasks[i].state == IDLE || (TIMEOUT <= now.Sub(task.startTime)) && (task.state == IN_PROGRESS) {
 				c.reduceTasks[i].state = IN_PROGRESS
 				c.reduceTasks[i].startTime = time.Now()
 				//TODO
@@ -89,9 +94,6 @@ func (c *Coordinator) taskDistributor(args *TaskArgs, reply *TaskReply) error {
 			}
 		}
 
-	} else {
-		reply.TaskType = EXIT
-		return nil
 	}
 
 	reply.TaskType = WAIT
@@ -101,19 +103,23 @@ func (c *Coordinator) taskDistributor(args *TaskArgs, reply *TaskReply) error {
 
 //TODO end program
 
-func (c *Coordinator) mapTaskDone(args *MapDoneArgs, reply *DoneReply) error {
+func (c *Coordinator) MapTaskDone(args *MapDoneArgs, reply *DoneReply) error {
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
-	c.mapTasks[args.MapID].state = COMPLETED
-	c.completedMapTasks += 1
+	if c.mapTasks[args.MapID].state != COMPLETED {
+		c.mapTasks[args.MapID].state = COMPLETED
+		c.completedMapTasks += 1
+	}
 	return nil
 }
 
-func (c *Coordinator) reduceTaskDone(args *ReduceDoneArgs, reply *DoneReply) error {
+func (c *Coordinator) ReduceTaskDone(args *ReduceDoneArgs, reply *DoneReply) error {
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
-	c.reduceTasks[args.ReduceID].state = COMPLETED
-	c.completedReduceTasks += 1
+	if c.reduceTasks[args.ReduceID].state != COMPLETED {
+		c.reduceTasks[args.ReduceID].state = COMPLETED
+		c.completedReduceTasks += 1
+	}
 	return nil
 }
 
