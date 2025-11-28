@@ -9,15 +9,19 @@ package mr
 import "os"
 import "strconv"
 
-//
 // example to show how to declare the arguments
 // and reply for an RPC.
-//
 type TaskArgs struct {
 }
 
 type TaskReply struct {
-	Task string
+	TaskType string
+	Task     string
+	NReduce  int
+	TaskID   int
+}
+type TaskDone struct {
+	TaskID int
 }
 type ExampleArgs struct {
 	X int
